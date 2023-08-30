@@ -1,0 +1,52 @@
+#!/bin/sh
+
+host="$1"
+
+setup-keymap pl pl
+
+setup-hostname -n $host
+
+#setup-interfaces -i < "$(cat <<EOF
+#auto lo
+#iface lo inet loopback
+#
+#auto eth0
+#iface eth0 inet dhcp
+    #hostname $host
+#EOF
+#)"
+
+setup-interfaces -a
+
+/etc/init.d/networking --quiet start &
+
+$(echo ''; echo '') | setup-dns
+
+echo root:kacpi | chpasswd
+
+setup-timezone -z UTC
+
+/etc/init.d/hostname --quiet restart
+
+rc-update --quiet add networking boot
+rc-update --quiet add seedrng boot || rc-update --quiet add urandom boot
+rc-update --quiet add acpid default
+rc-update --quiet add crond default
+#rc-service boot start
+#rc-service default start
+openrc boot
+openrc default
+
+cat << EOF > /etc/hosts
+127.0.0.1   $host localhost
+::1         localhost
+EOF
+
+setup-proxy none
+
+setup-apkrepos -1
+
+setup-sshd -c openssh
+setup-ntp -c chrony
+
+echo 'y' | setup-disk -m sys -s 0 /dev/vda
