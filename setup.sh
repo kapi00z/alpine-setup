@@ -1,5 +1,17 @@
 #!/bin/sh
 
+check_disk() {
+    if fdisk -l | grep -ie "$disk" -q
+    then
+        echo "Disk $disk found"
+    else
+        echo "Disk $disk not found!"
+        echo "Printing disk list:"
+        fdisk -l
+        exit 1
+    fi
+}
+
 set_addr() {
     if [[ "$addr" != "" ]]
     then
@@ -31,6 +43,35 @@ EOF
 
 }
 
+#check_disk() {
+    #disk_list=$(fdisk -l | grep -ie '/dev' | sed -e 's/.*\/dev\/\| .*\|[:0-9]//g' | sort -u)
+#
+    #if echo "${disk_list}" | grep -ie "$(echo $disk | sed 's/\/dev\///g')" -q
+    #then
+        #echo "Disk $disk found"
+    #else
+        #echo "Disk $disk not found!"
+        #echo "Printing disk list:"
+        #fdisk -l
+        #exit 1
+    #fi
+#}
+
+setup() {
+    echo $disk
+
+    if fdisk -l | grep -ie "${disk}2" -q
+    then
+        mount ${disk}2 /mnt
+        ls /mnt
+        cp /root/share/configure.sh /mnt/root/configure.sh
+        umount /mnt
+    else
+        echo n
+    fi
+}
+
+
 addr=''
 disk='/dev/vda'
 host=''
@@ -52,6 +93,11 @@ do
         
         *)
             echo "Command not recognized"
+            echo "Help:"
+            echo '-a -- provide last part of IP address 192.168.1.122.* -- default is dhcp'
+            echo '-d -- provide which disk device is used -- default is /dev/vda'
+            echo '-h -- provide hostname'
+            exit 1
             ;;
         
     esac
@@ -63,12 +109,14 @@ then
     exit 1
 fi
 
+check_disk
+
 setup-keymap pl pl
 
 setup-hostname -n $host
 
 set_addr
-
+0
 echo root:kacpi | chpasswd
 
 setup-timezone -z UTC
@@ -94,4 +142,6 @@ setup-apkrepos -1
 setup-sshd -c openssh
 setup-ntp -c chrony
 
-echo 'y' | setup-disk -m sys -s 0 $disk
+yes | setup-disk -m sys -s 0 $disk
+
+setup
