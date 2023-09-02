@@ -47,4 +47,10 @@ setup() {
 #disk=$(echo $1 | sed 's/\/dev\///g')
 disk=$1
 
-setup
+if echo "$disk" -eq "/dev/vda"
+then
+    echo true
+else
+    echo false
+fi
+#setup

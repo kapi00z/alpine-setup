@@ -65,6 +65,7 @@ setup() {
         mount ${disk}2 /mnt
         ls /mnt
         cp /root/share/configure.sh /mnt/root/configure.sh
+        cp /root/share/sync.sh /mnt/root/sync.sh
         umount /mnt
     else
         echo n
