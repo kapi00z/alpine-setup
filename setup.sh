@@ -15,14 +15,14 @@ check_disk() {
 set_addr() {
     if [[ "$addr" != "" ]]
     then
-        nameserver="192.168.122.1"
+        nameserver="192.168.1.1"
         interfaces="$(cat << EOF
 auto lo
 iface lo inet loopback
 
 auto eth0
 iface eth0 inet static
-    address 192.168.122.$addr
+    address 192.168.1.$addr
     gateway $nameserver
     hostname $host
 EOF
